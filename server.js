@@ -46,6 +46,8 @@ const requestListener = function (req, res) {
             dob: fields.dob,
             country: fields.countries,
             resumePath: newpath,
+            createdAt: new Date(Date.now()),
+            updatedAt: new Date(Date.now()),
           })
           .then((data, err) => {
             try {

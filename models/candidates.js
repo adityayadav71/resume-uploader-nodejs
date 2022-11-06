@@ -18,6 +18,12 @@ const candidate = db.define("candidate", {
     primaryKey: true,
     type: Sequelize.INTEGER,
   },
+  createdAt: {
+    type: Sequelize.DATE,
+  },
+  updatedAt: {
+    type: Sequelize.DATE,
+  },
 });
 
 module.exports = candidate;

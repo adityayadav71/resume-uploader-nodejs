@@ -6,9 +6,6 @@ module.exports = new Sequelize(
   {
     host: process.env.HOST,
     dialect: "mysql",
-    define: {
-      timestamps: false,
-    },
 
     pool: {
       max: 5,

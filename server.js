@@ -15,13 +15,12 @@ db.authenticate()
   .catch((err) => console.log("Error: " + err));
 
 const requestListener = function (req, res) {
-  res.setHeader("Content-Type", "application/json");
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   switch (req.url) {
     case "/form":
       res.writeHead(200, { "content-type": "text/html" });
-      const html = fs.readFileSync("./views/index.html");
+      var html = fs.readFileSync("./views/index.html");
       res.end(html);
       break;
     case "/countries":
@@ -45,7 +44,7 @@ const requestListener = function (req, res) {
             name: fields.name,
             dob: fields.dob,
             country: fields.countries,
-            resumePath: newpath,
+            resumePath: `/resumes/${files.resume.newFilename}.pdf`,
             createdAt: new Date(Date.now()),
             updatedAt: new Date(Date.now()),
           })
@@ -68,11 +67,55 @@ const requestListener = function (req, res) {
       });
 
       break;
-    case "/listing":
+    case "/submissions":
+      res.writeHead(200, { "content-type": "text/html" });
+      var html = fs.readFileSync("./views/listing.html");
+      res.end(html);
+      break;
+    case "/listings":
+      candidate
+        .findAll()
+        .then((data) =>
+          res.end(JSON.stringify({ results: data.length, listings: data }))
+        )
+        .catch((err) => console.error(err));
+
       break;
     default:
-      res.writeHead(404);
-      res.end(JSON.stringify({ error: "Resource not found" }));
+      const parsedURL = require("url").parse(req.url);
+      const download = Object.fromEntries(
+        new URLSearchParams(parsedURL.query)
+      ).download;
+      console.log(download);
+      if (download === "true") {
+        console.log("download true");
+        var file = __dirname + parsedURL.pathname;
+        console.log(file);
+
+        var filename = path.basename(file);
+        console.log(filename);
+
+        res.setHeader(
+          "Content-disposition",
+          "attachment; filename=" + filename
+        );
+        res.setHeader("Content-type", "application/pdf");
+
+        var filestream = fs.createReadStream(file);
+        filestream.pipe(res);
+      } else {
+        console.log("download false");
+        fs.readFile(__dirname + parsedURL.pathname, function (err, data) {
+          if (err) {
+            res.writeHead(404);
+            res.end(JSON.stringify(err));
+            return;
+          }
+          res.setHeader("Content-Type", "application/pdf");
+          res.writeHead(200);
+          res.end(data);
+        });
+      }
   }
 };
 const server = http.createServer(requestListener);

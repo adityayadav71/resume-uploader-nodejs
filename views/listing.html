@@ -6,5 +6,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Listing</title>
   </head>
-  <body></body>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+    body {
+      font-family: "Inter", sans-serif;
+      font-size: 18px;
+    }
+    table {
+      width: 100%;
+      text-align: center;
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+    td {
+      vertical-align: center;
+      height: 50px;
+      border: 1px solid black;
+    }
+    a {
+      color: black;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .viewResume,
+    .downloadResume {
+      padding: 10px;
+      border: none;
+      background-color: greenyellow;
+      border-radius: 5px;
+    }
+    .downloadResume {
+      background-color: blue;
+    }
+  </style>
+  <body>
+    <table id="container">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>D.O.B</th>
+        <th>Country</th>
+        <th>Resume</th>
+        <th>Submitted On</th>
+      </tr>
+    </table>
+  </body>
+  <script>
+    const container = document.getElementById("container");
+    async function submissions() {
+      const response = await fetch("/listings");
+      const data = await response.json();
+      const listings = data.listings;
+      const listElements = listings.map((listing) => {
+        const date = new Date(listing.createdAt);
+        return `
+        <tr>
+          <td>${listing.id}</td>
+          <td>${listing.name}</td>
+          <td>${listing.dob}</td>
+          <td>${listing.country}</td>
+          <td><button class="viewResume"><a href="${
+            listing.resumePath
+          }?download=false">View</a></button>
+          <button class="downloadResume"><a href="${
+            listing.resumePath
+          }?download=true">Download</a></button>
+        </td>
+          <td>${date.getDate()}/${date.getMonth()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()} </td>
+        </tr>
+        `;
+      });
+      listElements.forEach((listing) => {
+        container.insertAdjacentHTML("beforeend", listing);
+      });
+    }
+    submissions();
+  </script>
 </html>

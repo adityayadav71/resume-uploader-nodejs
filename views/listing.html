@@ -24,19 +24,28 @@
       border: 1px solid black;
     }
     a {
-      color: black;
       text-decoration: none;
-      font-weight: 700;
     }
+
+    button:hover {
+      cursor: pointer;
+    }
+
     .viewResume,
-    .downloadResume {
+    .downloadResume,
+    .deleteButton {
       padding: 10px;
       border: none;
       background-color: greenyellow;
       border-radius: 5px;
+      color: black;
+      font-weight: 700;
     }
     .downloadResume {
       background-color: blue;
+    }
+    .deleteButton {
+      background-color: red;
     }
   </style>
   <body>
@@ -48,6 +57,7 @@
         <th>Country</th>
         <th>Resume</th>
         <th>Submitted On</th>
+        <th>Delete</th>
       </tr>
     </table>
   </body>
@@ -65,14 +75,17 @@
           <td>${listing.name}</td>
           <td>${listing.dob}</td>
           <td>${listing.country}</td>
-          <td><button class="viewResume"><a href="${
+          <td><a href="${
             listing.resumePath
-          }?download=false">View</a></button>
-          <button class="downloadResume"><a href="${
+          }?download=false" target="_blank" rel="noopener noreferrer"><button class="viewResume">View</button></a>
+          <a href="${
             listing.resumePath
-          }?download=true">Download</a></button>
+          }?download=true"><button class="downloadResume">Download</button></a>
         </td>
           <td>${date.getDate()}/${date.getMonth()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()} </td>
+          <td><button class="deleteButton" onclick="deleteListing(${
+            listing.id
+          })">Delete</button></td>
         </tr>
         `;
       });
@@ -81,5 +94,12 @@
       });
     }
     submissions();
+    async function deleteListing(id) {
+      const response = await fetch(`/deleteListing/${id}`, {
+        method: "DELETE",
+      });
+      alert((await response.json()).message);
+      location.reload();
+    }
   </script>
 </html>

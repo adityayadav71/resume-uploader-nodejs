@@ -65,6 +65,7 @@
     countrySuggestion.addEventListener("click", async () => {
       const response = await fetch("http://localhost:5000/countries");
       countriesData = await response.json();
+      console.log(countriesData);
       const options = countriesData.map((country) => {
         return `<option value="${country.code}"" style="width: 100%;height: 20px;">${country.name}</option>`;
       });

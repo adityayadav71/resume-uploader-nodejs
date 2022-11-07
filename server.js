@@ -1,125 +1,51 @@
 const http = require("http");
 const fs = require("fs");
-const path = require("path");
 require("dotenv").config();
 const countries = require("./data.json");
-const host = "localhost";
-const port = 5000;
-const formidable = require("formidable");
+const uploadHandler = require("./controllers/uploadController");
+const deleteHandler = require("./controllers/deleteController");
+const resumeHandler = require("./controllers/resumeController");
+const candidateHandler = require("./controllers/candidateController");
 const db = require("./config/database.js");
-const candidate = require("./models/candidates.js");
 
 // Test DB
 db.authenticate()
   .then(() => console.log("Database connected..."))
   .catch((err) => console.log("Error: " + err));
 
+const serveHTML = (req, res, filepath) => {
+  res.writeHead(200, { "content-type": "text/html" });
+  return fs.readFileSync(filepath);
+};
+
 const requestListener = function (req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
-  switch (req.url) {
-    case "/form":
-      res.writeHead(200, { "content-type": "text/html" });
-      var html = fs.readFileSync("./views/index.html");
-      res.end(html);
-      break;
-    case "/countries":
-      res.writeHead(200);
-      res.end(JSON.stringify(countries.data));
-      break;
-    case "/uploadData":
-      const form = new formidable.IncomingForm();
-      form.parse(req, function (err, fields, files) {
-        console.log(fields);
-        const oldpath = files.resume.filepath;
-        const newpath = path.join(
-          path.join(__dirname, "resumes"),
-          `${files.resume.newFilename}.pdf`
-        );
-        fs.rename(oldpath, newpath, function (err) {
-          if (err) throw err;
-        });
-        candidate
-          .create({
-            name: fields.name,
-            dob: fields.dob,
-            country: fields.countries,
-            resumePath: `/resumes/${files.resume.newFilename}.pdf`,
-            createdAt: new Date(Date.now()),
-            updatedAt: new Date(Date.now()),
-          })
-          .then((data, err) => {
-            try {
-              res.end(
-                JSON.stringify({
-                  message: "Your Data has been uploaded successfully",
-                })
-              );
-            } catch (err) {
-              res.end(
-                JSON.stringify({
-                  error:
-                    "Data could not be uploaded successfully! Please Try again.",
-                })
-              );
-            }
-          });
-      });
-
-      break;
-    case "/submissions":
-      res.writeHead(200, { "content-type": "text/html" });
-      var html = fs.readFileSync("./views/listing.html");
-      res.end(html);
-      break;
-    case "/listings":
-      candidate
-        .findAll()
-        .then((data) =>
-          res.end(JSON.stringify({ results: data.length, listings: data }))
-        )
-        .catch((err) => console.error(err));
-
-      break;
-    default:
-      const parsedURL = require("url").parse(req.url);
-      const download = Object.fromEntries(
-        new URLSearchParams(parsedURL.query)
-      ).download;
-      console.log(download);
-      if (download === "true") {
-        console.log("download true");
-        var file = __dirname + parsedURL.pathname;
-        console.log(file);
-
-        var filename = path.basename(file);
-        console.log(filename);
-
-        res.setHeader(
-          "Content-disposition",
-          "attachment; filename=" + filename
-        );
-        res.setHeader("Content-type", "application/pdf");
-
-        var filestream = fs.createReadStream(file);
-        filestream.pipe(res);
-      } else {
-        console.log("download false");
-        fs.readFile(__dirname + parsedURL.pathname, function (err, data) {
-          if (err) {
-            res.writeHead(404);
-            res.end(JSON.stringify(err));
-            return;
-          }
-          res.setHeader("Content-Type", "application/pdf");
-          res.writeHead(200);
-          res.end(data);
-        });
-      }
+  if (req.url.match(/\/resumes\/[^\n]+?download/) && req.method === "GET") {
+    resumeHandler(req, res);
+  } else if (req.url === "/form" && req.method === "GET") {
+    res.end(serveHTML(req, res, "./views/index.html"));
+  } else if (req.url === "/countries" && req.method === "GET") {
+    res.writeHead(200);
+    res.end(JSON.stringify(countries.data));
+  } else if (req.url === "/submissions" && req.method === "GET") {
+    res.end(serveHTML(req, res, "./views/listing.html"));
+  } else if (req.url === "/listings" && req.method === "GET") {
+    candidateHandler(req, res);
+  } else if (req.url === "/uploadData" && req.method === "POST") {
+    uploadHandler(req, res);
+  } else if (
+    req.url.match(/\/deleteListing\/([0-9]+)/) &&
+    req.method === "DELETE"
+  ) {
+    deleteHandler(req, res);
+  } else {
+    res.writeHead(404);
+    res.end(JSON.stringify({ error: "Could not find resource" }));
   }
 };
 const server = http.createServer(requestListener);
-
-server.listen(port, host, () => {
+const port = process.env.PORT || 5000;
+server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

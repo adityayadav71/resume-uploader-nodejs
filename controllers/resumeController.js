@@ -1,5 +1,7 @@
 const fs = require("fs");
 const path = require("path");
+const handleError = require("./errorController");
+
 module.exports = (req, res) => {
   const download = req.url.split("?")[1].split("=");
   var file = path.join(
@@ -19,8 +21,7 @@ module.exports = (req, res) => {
   } else {
     fs.readFile(file, function (err, data) {
       if (err) {
-        res.writeHead(404);
-        res.end(JSON.stringify(err));
+        handleError(res, 404, err);
         return;
       }
       res.setHeader("Content-Type", "application/pdf");

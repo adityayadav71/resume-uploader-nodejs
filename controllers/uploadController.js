@@ -22,12 +22,16 @@ function uploadHandler(req, res) {
         if (err) throw err;
       });
     });
+
+    // Get country name from country code
     let countryName;
     countryData.data.forEach((country) => {
       if (country.code === fields.countries) {
         countryName = country.name;
       }
     });
+
+    // insert candidate into database
     candidate
       .create({
         name: fields.name,

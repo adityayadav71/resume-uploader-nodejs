@@ -2,15 +2,16 @@ const fs = require("fs");
 const path = require("path");
 const db = require("../config/database.js");
 const candidate = require("../models/candidates");
+const handleError = require("./errorController");
 
 async function deleteHandler(req, res) {
   const deleteFileCallback = () => {
     if (error) {
-      if (process.env.NODE_ENV === "development")
-        console.log("Error in deleting file");
-      else res.end(JSON.stringify({ message: "Something went wrong" }));
+      handleError(res, 400, error, "Error in deleting file, please try again!");
     }
   };
+
+  // Delete candidate's resume
   let resumePath = await candidate.findOne({
     where: {
       id: req.url.split("/")[2],
@@ -22,6 +23,7 @@ async function deleteHandler(req, res) {
     deleteFileCallback
   );
 
+  // Delete candidate from database
   candidate
     .destroy({
       where: {
@@ -31,6 +33,7 @@ async function deleteHandler(req, res) {
     .then(
       function (rowDeleted) {
         if (rowDeleted === 1) {
+          // reset candidate table auto increment value for ID column to 1 less than the number of submissions received
           candidate
             .count()
             .then((count) =>
@@ -39,14 +42,15 @@ async function deleteHandler(req, res) {
                   count - 1 > 0 ? count - 1 : 1
                 }`
               )
-            );
+            )
+            .catch((err) => {
+              handleError(res, 400, err);
+            });
           res.end(JSON.stringify({ message: "Deleted successfully" }));
         }
       },
       function (err) {
-        if (process.env.NODE_ENV === "production")
-          res.end(JSON.stringify({ message: "Something went wrong!" }));
-        else res.end(JSON.stringify({ error: err }));
+        handleError(res, 400, err);
       }
     );
   return;

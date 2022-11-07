@@ -1,4 +1,5 @@
 const candidate = require("../models/candidates");
+const handleError = require("./errorController");
 
 module.exports = (req, res, sort, order) => {
   if (sort && order) {
@@ -9,13 +10,17 @@ module.exports = (req, res, sort, order) => {
       .then((data) =>
         res.end(JSON.stringify({ results: data.length, listings: data }))
       )
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        handleError(res, 400, err);
+      });
   } else {
     candidate
       .findAll()
       .then((data) =>
         res.end(JSON.stringify({ results: data.length, listings: data }))
       )
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        handleError(res, 400, err);
+      });
   }
 };

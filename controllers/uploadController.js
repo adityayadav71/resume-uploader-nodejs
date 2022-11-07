@@ -9,11 +9,18 @@ function uploadHandler(req, res) {
   form.parse(req, function (err, fields, files) {
     const oldpath = files.resume.filepath;
     const newpath = path.join(
+      __dirname,
+      "..",
       path.join("resumes"),
       `${files.resume.newFilename}.pdf`
     );
-    fs.rename(oldpath, newpath, function (err) {
+    fs.readFile(oldpath, function (err, data) {
       if (err) throw err;
+
+      // Write the file
+      fs.writeFile(newpath, data, function (err) {
+        if (err) throw err;
+      });
     });
     let countryName;
     countryData.data.forEach((country) => {

@@ -1,6 +1,6 @@
 # Resume Uploader and Viewer using vanilla NodeJS
 
-##Implemented Features:
+#### Implemented Features:
 
 1. **Form** for the candidates to submit their name, date of birth, country and **upload** their **resume** in pdf format.
 
@@ -12,7 +12,7 @@
    
    ![Listing page screenshot](./images/listing.png)
 
-##API ROUTES
+#### API ROUTES
 
 **GET** /countries
 

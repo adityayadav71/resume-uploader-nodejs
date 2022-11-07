@@ -26,5 +26,8 @@
     "http": "^0.0.1-security",
     "mysql2": "^2.3.3",
     "sequelize": "^6.25.4"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }

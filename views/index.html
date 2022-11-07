@@ -69,7 +69,7 @@
     let countriesData;
     // Make an API call to backend on click of select to load all the country options
     countrySuggestion.addEventListener("click", async () => {
-      const response = await fetch("http://localhost:5000/countries");
+      const response = await fetch("/countries");
       countriesData = await response.json();
       const options = countriesData.map((country) => {
         return `<option value="${country.code}"" style="width: 100%;height: 20px;">${country.name}</option>`;

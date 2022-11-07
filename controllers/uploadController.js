@@ -32,11 +32,10 @@ function uploadHandler(req, res) {
       })
       .then((data, err) => {
         try {
-          res.end(
-            JSON.stringify({
-              message: "Your Data has been uploaded successfully",
-            })
-          );
+          res.writeHead(302, {
+            Location: "/submissions",
+          });
+          res.end();
         } catch (err) {
           if (process.env.NODE_ENV === "production")
             res.end(

@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+      integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <title>Listing</title>
   </head>
   <style>
@@ -47,30 +54,53 @@
     .deleteButton {
       background-color: red;
     }
+    .sort--button {
+      background-color: none;
+      border-radius: 50%;
+      border: none;
+    }
   </style>
   <body>
     <table id="container">
       <tr>
         <th>ID</th>
-        <th>Name</th>
+        <th>
+          Name
+          <button class="sort--button" onclick="sort('name', 'ASC')">
+            <i class="fa-solid fa-caret-up"></i></button
+          ><button class="sort--button" onclick="sort('name', 'DESC')">
+            <i class="fa-solid fa-caret-down"></i>
+          </button>
+        </th>
         <th>D.O.B</th>
         <th>Country</th>
         <th>Resume</th>
-        <th>Submitted On</th>
+        <th>
+          Submitted On
+          <button class="sort--button" onclick="sort('createdAt', 'ASC')">
+            <i class="fa-solid fa-caret-up"></i></button
+          ><button class="sort--button" onclick="sort('createdAt', 'DESC')">
+            <i class="fa-solid fa-caret-down"></i>
+          </button>
+        </th>
         <th>Delete</th>
       </tr>
     </table>
   </body>
   <script>
     const container = document.getElementById("container");
-    async function submissions() {
-      const response = await fetch("/listings");
+    async function submissions(field, order) {
+      const url =
+        field === "" && order === ""
+          ? "/listings"
+          : `/listings/${field}/${order}`;
+      const response = await fetch(url);
       const data = await response.json();
       const listings = data.listings;
       const listElements = listings.map((listing) => {
         const date = new Date(listing.createdAt);
         return `
-        <tr>
+        <tr class="listings">
           <td>${listing.id}</td>
           <td>${listing.name}</td>
           <td>${listing.dob}</td>
@@ -93,7 +123,13 @@
         container.insertAdjacentHTML("beforeend", listing);
       });
     }
-    submissions();
+    submissions("", "");
+    async function sort(field, order) {
+      document.querySelectorAll(".listings").forEach((listing) => {
+        listing.innerHTML = "";
+      });
+      await submissions(field, order);
+    }
     async function deleteListing(id) {
       const response = await fetch(`/deleteListing/${id}`, {
         method: "DELETE",
